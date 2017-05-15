@@ -201,7 +201,8 @@ class RxBleClientImpl extends RxBleClient {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private Observable<RxBleScanResult> createScanOperationV21(ScanSettings settings, @Nullable UUID[] filterServiceUUIDs) {
         final Set<UUID> filteredUUIDs = uuidUtil.toDistinctSet(filterServiceUUIDs);
-        final RxBleRadioOperationScanV21 scanOperation = new RxBleRadioOperationScanV21(settings, filterServiceUUIDs, rxBleAdapterWrapper);
+        final RxBleRadioOperationScanV21 scanOperation =
+                new RxBleRadioOperationScanV21(settings, filterServiceUUIDs, rxBleAdapterWrapper, uuidUtil);
         return rxBleRadio.queue(scanOperation)
                 .doOnUnsubscribe(new Action0() {
                     @Override

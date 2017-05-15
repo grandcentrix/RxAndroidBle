@@ -1,6 +1,5 @@
 package com.polidea.rxandroidble.internal.util;
 
-import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -9,6 +8,7 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
 import android.os.Build;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 
 import java.util.List;
 import java.util.Set;
@@ -24,6 +24,10 @@ public class RxBleAdapterWrapper {
     @Inject
     public RxBleAdapterWrapper(@Nullable BluetoothAdapter bluetoothAdapter) {
         this.bluetoothAdapter = bluetoothAdapter;
+    }
+
+    public Set<BluetoothDevice> getBondedDevices() {
+        return bluetoothAdapter.getBondedDevices();
     }
 
     public BluetoothDevice getRemoteDevice(String macAddress) {
@@ -42,12 +46,14 @@ public class RxBleAdapterWrapper {
         return bluetoothAdapter.startLeScan(leScanCallback);
     }
 
-    public void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
-        bluetoothAdapter.stopLeScan(leScanCallback);
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public boolean isOffloadedFilteringSupported() {
+        return bluetoothAdapter.isOffloadedFilteringSupported();
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void startScan(List<ScanFilter> scanFilters, ScanSettings scanSettings, ScanCallback scanCallback) {
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    public void startScan(@Nullable List<ScanFilter> scanFilters, ScanSettings scanSettings,
+            ScanCallback scanCallback) {
         final BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
         if (scanner == null) {
             scanCallback.onScanFailed(SCAN_FAILED_INTERNAL_ERROR);
@@ -56,7 +62,11 @@ public class RxBleAdapterWrapper {
         scanner.startScan(scanFilters, scanSettings, scanCallback);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
+        bluetoothAdapter.stopLeScan(leScanCallback);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     public void stopScan(ScanCallback scanCallback) {
         final BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
         if (scanner == null) {
@@ -64,9 +74,5 @@ public class RxBleAdapterWrapper {
             return;
         }
         scanner.stopScan(scanCallback);
-    }
-
-    public Set<BluetoothDevice> getBondedDevices() {
-        return bluetoothAdapter.getBondedDevices();
     }
 }
